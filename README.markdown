@@ -136,91 +136,92 @@ So: are we screwed for ever doing anything robust and interesting with closures?
 Section 2: Closure-Like Ruby Constructs
 ---------------------------------------
 
- Actually, no. When we pass a block &param, then refer to that param without the ampersand, that
- is secretly a synonym for Proc.new(&param):
+Actually, no. When we pass a block &param, then refer to that param without the ampersand, that is secretly a synonym for Proc.new(&param):
 
-example 6
+### Example 6
 
-def save_for_later(&b)
-    @saved = Proc.new(&b)  same as: @saved = b
-end
+    def save_for_later(&b)
+      @saved = Proc.new(&b)  # same as: @saved = b
+    end
 
-save_for_later { puts "Hello again!" }
-puts "Deferred execution of a Proc works just the same with Proc.new:"
-@saved.call
+    save_for_later { puts "Hello again!" }
+    puts "Deferred execution of a Proc works just the same with Proc.new:"
+    @saved.call
 
- We can define a Proc on the spot, no need for the &param:
+We can define a Proc on the spot, no need for the &param:
 
-example 7
+### Example 7
 
-@saved_proc_new = Proc.new { puts "I'm declared on the spot with Proc.new." }
-puts "Deferred execution of a Proc works just the same with ad-hoc Proc.new:"
-@saved_proc_new.call
+    @saved_proc_new = Proc.new { puts "I'm declared on the spot with Proc.new." }
+    puts "Deferred execution of a Proc works just the same with ad-hoc Proc.new:"
+    @saved_proc_new.call
 
- Behold! A true closure!
+Behold! A true closure!
 
- But wait, there's more.... Ruby has a whole bunch of things that seem to behave like closures,
- and can be called with .call:
+But wait, there's more.... Ruby has a whole bunch of things that seem to behave like closures, and can be called with .call:
 
-example 8
+### Example 8
 
-@saved_proc_new = Proc.new { puts "I'm declared with Proc.new." }
-@saved_proc = proc { puts "I'm declared with proc." }
-@saved_lambda = lambda { puts "I'm declared with lambda." }
-def some_method 
-    puts "I'm declared as a method."
-end
-@method_as_closure = method(:some_method)
+    @saved_proc_new = Proc.new { puts "I'm declared with Proc.new." }
+    @saved_proc = proc { puts "I'm declared with proc." }
+    @saved_lambda = lambda { puts "I'm declared with lambda." }
+    
+    def some_method 
+      puts "I'm declared as a method."
+    end
+    
+    @method_as_closure = method(:some_method)
 
-puts "Here are four superficially identical forms of deferred execution:"
-@saved_proc_new.call
-@saved_proc.call
-@saved_lambda.call
-@method_as_closure.call
+    puts "Here are four superficially identical forms of deferred execution:"
+    
+    @saved_proc_new.call
+    @saved_proc.call
+    @saved_lambda.call
+    @method_as_closure.call
 
- So in fact, there are no less than seven -- count 'em, SEVEN -- different closure-like constructs in Ruby:
+So in fact, there are no less than seven -- count 'em, SEVEN -- different closure-like constructs in Ruby:
 
-      1. block (implicitly passed, called with yield)
-      2. block (&b  =>  f(&b)  =>  yield)  
-      3. block (&b  =>  b.call)    
-      4. Proc.new  
-      5. proc  
-      6. lambda    
-      7. method
+1. block (implicitly passed, called with yield)
+2. block (&b  =>  f(&b)  =>  yield)  
+3. block (&b  =>  b.call)    
+4. Proc.new  
+5. proc  
+6. lambda    
+7. method
 
- Though they all look different, some of these are secretly identical, as we'll see shortly.
+Though they all look different, some of these are secretly identical, as we'll see shortly.
 
- We already know that (1) and (2) are not really closures -- and they are, in fact, exactly the same thing.
- Numbers 3-7 all seem to be identical. Are they just different syntaxes for identical semantics?
+We already know that (1) and (2) are not really closures -- and they are, in fact, exactly the same thing. Numbers 3-7 all seem to be identical. Are they just different syntaxes for identical semantics?
 
- ---------------------------- Section 3: Closures and Control Flow ----------------------------
+Section 3: Closures and Control Flow
+----------------------------
 
- No, they aren't! One of the distinguishing features has to do with what "return" does.
+No, they aren't! One of the distinguishing features has to do with what "return" does.
 
- Consider first this example of several different closure-like things *without* a return statement.
- They all behave identically:
+Consider first this example of several different closure-like things *without* a return statement. They all behave identically:
 
-example 9
+### Example 9
 
-def f(closure)
-    puts
-    puts "About to call closure"
-    result = closure.call
-    puts "Closure returned: {result}"
-    "Value from f"
-end
+    def f(closure)
+      puts
+      puts "About to call closure"
+      result = closure.call
+      puts "Closure returned: {result}"
+      "Value from f"
+    end
 
-puts "f returned: " + f(Proc.new { "Value from Proc.new" })
-puts "f returned: " + f(proc { "Value from proc" })
-puts "f returned: " + f(lambda { "Value from lambda" })
-def another_method
-    "Value from method"
-end
-puts "f returned: " + f(method(:another_method))
+    puts "f returned: " + f(Proc.new { "Value from Proc.new" })
+    puts "f returned: " + f(proc { "Value from proc" })
+    puts "f returned: " + f(lambda { "Value from lambda" })
+    def another_method
+      "Value from method"
+    end
+    
+    puts "f returned: " + f(method(:another_method))
 
- But put in a "return," and all hell breaks loose!
+    But put in a "return," and all hell breaks loose!
 
-example 10
+### Example 10
 
 begin
     f(Proc.new { return "Value from Proc.new" })
