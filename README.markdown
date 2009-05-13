@@ -101,41 +101,40 @@ We can pass a block on down the chain, however, using &:
 
 So do we have closures? Not quite! We can't hold on to a &block and call it later at an arbitrary time; it doesn't work. This, for example, will not compile:
 
-   def save_block_for_later(&block)
-    saved = &block;
-   end
+    def save_block_for_later(&block)
+      saved = &block;
+    end
 
 But we *can* pass it around if we use drop the &, and use block.call(...) instead of yield:
 
-example 5
+### Example 5
 
-def save_for_later(&b)
-    @saved = b   Note: no ampersand! This turns a block into a closure of sorts.
-end
+    def save_for_later(&b)
+      @saved = b   # Note: no ampersand! This turns a block into a closure of sorts.
+    end
 
-save_for_later { puts "Hello!" }
-puts "Deferred execution of a block:"
-@saved.call
-@saved.call
+    save_for_later { puts "Hello!" }
+    puts "Deferred execution of a block:"
+    @saved.call
+    @saved.call
 
- But wait! We can't pass multiple blocks to a function! As it turns out, there can be only zero
- or one &block_params to a function, and the &param *must* be the last in the list.
+But wait! We can't pass multiple blocks to a function! As it turns out, there can be only zero or one &block_params to a function, and the &param *must* be the last in the list.
 
- None of these will compile:
+None of these will compile:
 
     def f(&block1, &block2) ...
     def f(&block1, arg_after_block) ...
     f { puts "block1" } { puts "block2" }
 
- What the heck?
+What the heck?
 
- I claim this single-block limitation violates the "principle of least surprise." The reasons for
- it have to do with ease of C implementation, not semantics.
+I claim this single-block limitation violates the "principle of least surprise." The reasons for it have to do with ease of C implementation, not semantics.
 
- So: are we screwed for ever doing anything robust and interesting with closures?
+So: are we screwed for ever doing anything robust and interesting with closures?
 
 
- ---------------------------- Section 2: Closure-Like Ruby Constructs ----------------------------
+Section 2: Closure-Like Ruby Constructs
+---------------------------------------
 
  Actually, no. When we pass a block &param, then refer to that param without the ampersand, that
  is secretly a synonym for Proc.new(&param):
