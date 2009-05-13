@@ -1,4 +1,4 @@
-CLOSURES IN RUBY     
+Closures In Ruby
 ================
 
 Paul Cantrell  
@@ -12,11 +12,9 @@ then trying to guess the output of the code!
 
 A closure is a block of code which meets three criteria:
  
-	* It can be passed around as a value and
- 
-	* executed on demand by anyone who has that value, at which time
- 
-	* it can refer to variables from the context in which it was created (i.e. it is closed with respect to variable access, in the mathematical sense of the word "closed").
+* It can be passed around as a value and
+* executed on demand by anyone who has that value, at which time
+* it can refer to variables from the context in which it was created (i.e. it is closed with respect to variable access, in the mathematical sense of the word "closed").
 
 (The word "closure" actually has an imprecise meaning, and some people don't
 think that criterion 1 is part of the definition. I think it is.)
@@ -51,67 +49,63 @@ Blocks are like closures, because they can refer to variables from their definin
 		yield
 	end
 
-x = 5
-puts "value of x before: {x}"
-thrice { x += 1 }
-puts "value of x after: {x}"
+	x = 5
+	puts "value of x before: {x}"
+	thrice { x += 1 }
+	puts "value of x after: {x}"
 
- A block refers to variables in the context it was defined, not the context in which it is called:
+A block refers to variables in the context it was defined, not the context in which it is called:
 
-example 2
+### example 2
 
-def thrice_with_local_x
-    x = 100
-    yield
-    yield
-    yield
-    puts "value of x at end of thrice_with_local_x: {x}"
-end
+	def thrice_with_local_x
+		x = 100
+		yield
+		yield
+		yield
+		puts "value of x at end of thrice_with_local_x: {x}"
+	end
 
-x = 5
-thrice_with_local_x { x += 1 }
-puts "value of outer x after: {x}"
+	x = 5
+	thrice_with_local_x { x += 1 }
+	puts "value of outer x after: {x}"
 
- A block only refers to *existing* variables in the outer context; if they don't exist in the outer, a
- block won't create them there:
+A block only refers to *existing* variables in the outer context; if they don't exist in the outer, a block won't create them there:
 
-example 3
+### example 3
 
-thrice do  note that {...} and do...end are completely equivalent
-    y = 10
-    puts "Is y defined inside the block where it is first set?"
-    puts "Yes." if defined? y
-end
-puts "Is y defined in the outer context after being set in the block?"
-puts "No!" unless defined? y
+	thrice do  # note that {...} and do...end are completely equivalent
+	    y = 10
+	    puts "Is y defined inside the block where it is first set?"
+	    puts "Yes." if defined? y
+	end
+	puts "Is y defined in the outer context after being set in the block?"
+	puts "No!" unless defined? y
 
- OK, so blocks seem to be like closures: they are closed with respect to variables defined in the context
- where they were created, regardless of the context in which they're called.
+OK, so blocks seem to be like closures: they are closed with respect to variables defined in the context where they were created, regardless of the context in which they're called.
  
- But they're not quite closures as we've been using them, because we have no way to pass them around:
- "yield" can *only* refer to the block passed to the method it's in.
+But they're not quite closures as we've been using them, because we have no way to pass them around: "yield" can *only* refer to the block passed to the method it's in.
 
- We can pass a block on down the chain, however, using &:
+We can pass a block on down the chain, however, using &:
 
-example 4
+### example 4
 
-def six_times(&block)
+	def six_times(&block)
+		thrice(&block)
     thrice(&block)
-    thrice(&block)
-end
+	end
 
-x = 4
-six_times { x += 10 }
-puts "value of x after: {x}"
+	x = 4
+	six_times { x += 10 }
+	puts "value of x after: {x}"
 
- So do we have closures? Not quite! We can't hold on to a &block and call it later at an arbitrary
- time; it doesn't work. This, for example, will not compile:
+So do we have closures? Not quite! We can't hold on to a &block and call it later at an arbitrary time; it doesn't work. This, for example, will not compile:
 
  def save_block_for_later(&block)
-     saved = &block;
+	saved = &block;
  end
 
- But we *can* pass it around if we use drop the &, and use block.call(...) instead of yield:
+But we *can* pass it around if we use drop the &, and use block.call(...) instead of yield:
 
 example 5
 
